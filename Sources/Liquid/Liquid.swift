@@ -1,11 +1,15 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-/// A macro that produces both a value and a string containing the
-/// source code that generated the value. For example,
-///
-///     #stringify(x + y)
-///
-/// produces a tuple `(x + y, "x + y")`.
-@freestanding(expression)
-public macro stringify<T>(_ value: T) -> (T, String) = #externalMacro(module: "LiquidMacros", type: "StringifyMacro")
+import Vapor
+
+// MARK: Route
+
+/// Use this method as a GET request
+/// - Parameter method: HTTP Method for this request
+/// - Parameter path: the subpath to the endpoint
+@attached(peer, names: overloaded)
+public macro Route(
+    _ method: HTTPMethod,
+    _ path: PathComponent...
+) = #externalMacro(module: "LiquidMacros", type: "RouteMacro")
