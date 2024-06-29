@@ -24,6 +24,12 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-macro-testing.git", branch: "main"),
     ],
     targets: [
+        .target(name: "Liquid", dependencies: [
+            .target(name: "LiquidMacros"),
+            .product(name: "Vapor", package: "vapor")
+        ]),
+
+
         .macro(
             name: "LiquidMacros",
             dependencies: [
@@ -31,11 +37,6 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
-
-        .target(name: "Liquid", dependencies: [
-            "LiquidMacros",
-            .product(name: "Vapor", package: "vapor")
-        ]),
 
         .executableTarget(name: "LiquidClient", dependencies: ["Liquid"]),
 
