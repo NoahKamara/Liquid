@@ -9,7 +9,7 @@ public protocol RouteParameter<Value>: ~Copyable {
     func decode(from request: Request) throws -> Value
 }
 
-extension RouteParameter {
+public extension RouteParameter {
     func callAsFunction(from request: Request) throws -> Value {
         try self.decode(from: request)
     }
@@ -79,21 +79,52 @@ public extension RouteParameters {
             self.path = path
         }
 
-        init(
+        public init(
             _: Value.Type,
             at path: CodingKeyRepresentable...
         ) {
             self.init(path: path)
         }
 
-        init(
-            _: Value.Type
+        public func decode(from request: Request) throws -> Value {
+            try request.query.get(Value.self, at: path)
+        }
+    }
+}
+
+// MARK: Path
+public extension RouteParameters {
+    struct Path<Value: LosslessStringConvertible>: RouteParameter {
+        let name: PathComponent
+        
+        public init(
+            _: Value.Type,
+            _ name: PathComponent
         ) {
-            self.init(path: [])
+            self.name = name
         }
 
         public func decode(from request: Request) throws -> Value {
-            try request.query.get(Value.self, at: path)
+            switch name {
+                case .constant, .anything:
+                    throw DecodingError.dataCorrupted(.init(
+                        codingPath: [],
+                        debugDescription: "PathComponent must be parameter or catchall")
+                    )
+
+                case .parameter(let string):
+                    try request.parameters.require(string, as: Value.self)
+
+                case .catchall:
+                    if Value.self == [String].self {
+                        request.parameters.getCatchall() as! Value
+                    } else {
+                        throw DecodingError.dataCorrupted(.init(
+                            codingPath: [],
+                            debugDescription: "Value.self must be of [String]")
+                        )
+                    }
+            }
         }
     }
 }

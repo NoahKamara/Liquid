@@ -2,11 +2,11 @@ import XCTest
 import MacroTesting
 @testable import LiquidMacros
 
-final class PathTests: XCTestCase {
+final class HeaderTests: XCTestCase {
     override func invokeTest() {
         withMacroTesting(
             macros: [
-                "Route": RouteMacro.self
+                "CollectableRoute": RouteMacro.self
             ]
         ) {
             super.invokeTest()
@@ -16,41 +16,41 @@ final class PathTests: XCTestCase {
     func testParameterName() throws {
         assertMacro {
             #"""
-            @Route(.GET, "greet", ":name")
-            func greet(@Path name: String) -> String {
+            @CollectableRoute(.GET, "greet", ":name")
+            func greet(@Header name: String) -> String {
                 "Hello \(name)"
             }
             """#
         } expansion: {
             #"""
-            func greet(@Path name: String) -> String {
+            func greet(@Header name: String) -> String {
                 "Hello \(name)"
             }
 
             func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParamters.Path("name")
+                let __macro_local_4namefMu_ = try RouteParameters.Header("name")
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
         }
     }
 
-    func testCustomPath() throws {
+    func testCustomName() throws {
         assertMacro {
             #"""
-            @Route(.GET, "greet", ":name")
-            func greet(@Path("person") name: String) -> String {
+            @CollectableRoute(.GET, "greet", ":name")
+            func greet(@Header("person") name: String) -> String {
                 "Hello \(name)"
             }
             """#
         } expansion: {
             #"""
-            func greet(@Path("person") name: String) -> String {
+            func greet(@Header("person") name: String) -> String {
                 "Hello \(name)"
             }
 
             func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParamters.Path("person")
+                let __macro_local_4namefMu_ = try RouteParameters.Header("person")
                 return greet(name: __macro_local_4namefMu_)
             }
             """#

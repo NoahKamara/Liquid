@@ -22,13 +22,13 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-syntax.git", from: "600.0.0-latest"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.102.0"),
         .package(url: "https://github.com/pointfreeco/swift-macro-testing.git", branch: "main"),
+        .package(url: "https://github.com/mattpolzin/OpenAPIKit", from: "3.1.3"),
     ],
     targets: [
         .target(name: "Liquid", dependencies: [
             .target(name: "LiquidMacros"),
             .product(name: "Vapor", package: "vapor")
         ]),
-
 
             .macro(
                 name: "LiquidMacros",
@@ -38,7 +38,13 @@ let package = Package(
                 ]
             ),
 
-            .executableTarget(name: "LiquidClient", dependencies: ["Liquid"]),
+            .executableTarget(
+                name: "LiquidClient",
+                dependencies: [
+                    "Liquid",
+//                    "OpenAPIKit"
+                ]
+            ),
 
             .testTarget(
                 name: "LiquidTests",

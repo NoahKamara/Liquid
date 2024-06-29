@@ -2,11 +2,12 @@ import XCTest
 import MacroTesting
 @testable import LiquidMacros
 
-final class BodyTests: XCTestCase {
+
+final class QueryTests: XCTestCase {
     override func invokeTest() {
         withMacroTesting(
             macros: [
-                "Route": RouteMacro.self
+                "CollectableRoute": RouteMacro.self
             ]
         ) {
             super.invokeTest()
@@ -18,19 +19,19 @@ final class BodyTests: XCTestCase {
 
         assertMacro {
             #"""
-            @Route(.POST, "greet")
-            func greet(@Body(.container) name: String) -> String {
+            @CollectableRoute(.GET, "greet")
+            func greet(@Query(.container) name: String) -> String {
                 "Hello \(name)"
             }
             """#
         } expansion: {
             #"""
-            func greet(@Body(.container) name: String) -> String {
+            func greet(@Query(.container) name: String) -> String {
                 "Hello \(name)"
             }
 
             func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParamters.Body()
+                let __macro_local_4namefMu_ = try RouteParameters.Query()
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -40,19 +41,19 @@ final class BodyTests: XCTestCase {
     func testParameterName() throws {
         assertMacro {
             #"""
-            @Route(.POST, "greet")
-            func greet(@Body name: String) -> String {
+            @CollectableRoute(.GET, "greet")
+            func greet(@Query name: String) -> String {
                 "Hello \(name)"
             }
             """#
         } expansion: {
             #"""
-            func greet(@Body name: String) -> String {
+            func greet(@Query name: String) -> String {
                 "Hello \(name)"
             }
 
             func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParamters.Body("name")
+                let __macro_local_4namefMu_ = try RouteParameters.Query("name")
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -62,19 +63,19 @@ final class BodyTests: XCTestCase {
     func testCustomPath() throws {
         assertMacro {
             #"""
-            @Route(.POST, "greet")
-            func greet(@Body("person") name: String) -> String {
+            @CollectableRoute(.GET, "greet")
+            func greet(@Query("person") name: String) -> String {
                 "Hello \(name)"
             }
             """#
         } expansion: {
             #"""
-            func greet(@Body("person") name: String) -> String {
+            func greet(@Query("person") name: String) -> String {
                 "Hello \(name)"
             }
 
             func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParamters.Body("person")
+                let __macro_local_4namefMu_ = try RouteParameters.Query("person")
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -84,19 +85,19 @@ final class BodyTests: XCTestCase {
     func testCustomMultiPath() throws {
         assertMacro {
             #"""
-            @Route(.POST, "greet")
-            func greet(@Body("person", "name") name: String) -> String {
+            @CollectableRoute(.GET, "greet")
+            func greet(@Query("person", "name") name: String) -> String {
                 "Hello \(name)"
             }
             """#
         } expansion: {
             #"""
-            func greet(@Body("person", "name") name: String) -> String {
+            func greet(@Query("person", "name") name: String) -> String {
                 "Hello \(name)"
             }
 
             func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParamters.Body("person", "name")
+                let __macro_local_4namefMu_ = try RouteParameters.Query("person", "name")
                 return greet(name: __macro_local_4namefMu_)
             }
             """#

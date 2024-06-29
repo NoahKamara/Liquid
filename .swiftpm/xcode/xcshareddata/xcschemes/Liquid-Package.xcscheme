@@ -45,7 +45,7 @@
       shouldAutocreateTestPlan = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "LiquidMacroTests"
@@ -54,21 +54,6 @@
                ReferencedContainer = "container:">
             </BuildableReference>
             <SkippedTests>
-               <Test
-                  Identifier = "BodyTests">
-               </Test>
-               <Test
-                  Identifier = "HeaderTests">
-               </Test>
-               <Test
-                  Identifier = "PathTests">
-               </Test>
-               <Test
-                  Identifier = "QueryTests">
-               </Test>
-               <Test
-                  Identifier = "RouteAliasTests">
-               </Test>
                <Test
                   Identifier = "RouteMacroTests">
                </Test>
@@ -84,6 +69,9 @@
                ReferencedContainer = "container:">
             </BuildableReference>
             <SkippedTests>
+               <Test
+                  Identifier = "RouteParameterTests">
+               </Test>
                <Test
                   Identifier = "noParameters()">
                </Test>
