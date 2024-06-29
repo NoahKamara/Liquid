@@ -16,7 +16,7 @@ final class RouteAliasTests: XCTestCase {
 
     override func invokeTest() {
         withMacroTesting(
-            macros: .init(uniqueKeysWithValues: allowedRouteAttributes.map({ ($0, RouteMacro.self) }))
+            macros: .init(uniqueKeysWithValues: allowedRouteAliases.map({ ($0, RouteMacro.self) }))
         ) {
             super.invokeTest()
         }

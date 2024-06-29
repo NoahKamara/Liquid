@@ -8,6 +8,31 @@ let allowedParameterAttributeNames: [String] = [
     "Body"
 ]
 
+extension MacroExpansionContext {
+    func uniqueFunction(_ functionDecl: FunctionDeclSyntax) -> TokenSyntax {
+        let parameters = functionDecl.signature.parameterClause.parameters
+            .map({ $0.firstName.identifier?.name ?? "_" })
+            .joined(separator: "_")
+
+        return makeUniqueName(functionDecl.name.text+parameters)
+    }
+
+    func uniqueRouteName(_ routeAttrib: RouteAttribute) -> TokenSyntax {
+        let parameters = routeAttrib.path
+            .map({
+                $0.trimmedDescription
+            })
+            .joined(separator: "_")
+        
+        var inputString = routeAttrib.method.trimmedDescription+parameters
+
+        inputString.replace("\"", with: "")
+        inputString.replace(".", with: "_")
+
+        return makeUniqueName(inputString)
+    }
+}
+
 
 struct RouteMacro: PeerMacro {
     static func buildParameterDecoder(
@@ -49,16 +74,30 @@ struct RouteMacro: PeerMacro {
         return FunctionCallExprSyntax(callee: callee, argumentList: { arguments })
     }
 
-    static func buildRouteMethodCall() {
-
-    }
-
+    
     static func expansion(
         of node: AttributeSyntax,
         providingPeersOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
+        do {
+            return try build(
+                node: node,
+                declaration: declaration,
+                context: context
+            )
+        } catch {
+            context.diagnose(error.diagnostic)
+            return []
+        }
+    }
 
+
+    static func build(
+        node: AttributeSyntax,
+        declaration: some DeclSyntaxProtocol,
+        context: some MacroExpansionContext
+    ) throws(DiagnosticError) -> [DeclSyntax] {
         guard let functionDecl = declaration.as(FunctionDeclSyntax.self) else {
             DiagnosticBuilder(for: declaration)
                 .message("Macro can only be applied to Methods & Functions")
@@ -114,8 +153,10 @@ struct RouteMacro: PeerMacro {
             parameters: [.init(firstName: "request", type: IdentifierTypeSyntax(name: "Request"))]
         )
 
+        let routeAttribs = try RouteAttribute(from: node, functionName: functionDecl.name)
+
         let function = FunctionDeclSyntax(
-            name: functionDecl.name,
+            name: context.makeUniqueName(functionDecl.name.text+"_"+functionDecl.signature.parameterClause.parameters.trimmedDescription),
             signature: FunctionSignatureSyntax(
                 parameterClause: parameterClause,
                 returnClause: functionDecl.signature.returnClause

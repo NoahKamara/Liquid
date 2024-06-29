@@ -6,7 +6,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "Liquid",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+    platforms: [.macOS(.v13), .iOS(.v16)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -30,23 +30,32 @@ let package = Package(
         ]),
 
 
-        .macro(
-            name: "LiquidMacros",
-            dependencies: [
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
-            ]
-        ),
+            .macro(
+                name: "LiquidMacros",
+                dependencies: [
+                    .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                    .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+                ]
+            ),
 
-        .executableTarget(name: "LiquidClient", dependencies: ["Liquid"]),
+            .executableTarget(name: "LiquidClient", dependencies: ["Liquid"]),
 
-        .testTarget(
-            name: "LiquidMacroTests",
-            dependencies: [
-                "LiquidMacros",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-                .product(name: "MacroTesting", package: "swift-macro-testing"),
-            ]
-        ),
+            .testTarget(
+                name: "LiquidTests",
+                dependencies: [
+                    "Liquid",
+//                    .product(name: "XCTVapor", package: "vapor"),
+                    .product(name: "Vapor", package: "vapor")
+                ]
+            ),
+
+            .testTarget(
+                name: "LiquidMacroTests",
+                dependencies: [
+                    "LiquidMacros",
+                    .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                    .product(name: "MacroTesting", package: "swift-macro-testing"),
+                ]
+            ),
     ]
 )

@@ -1,12 +1,17 @@
 import Vapor
 
 
+@attached(peer)
+public macro CollectableRoute(_ method: HTTPMethod) = #externalMacro(module: "LiquidMacros", type: "DecoratorMacro")
+
+
 // MARK: Collection
 
 /// Use this method as a GET request
 /// - Parameter method: HTTP Method for this request
 /// - Parameter path: the subpath to the endpoint
-@attached(extension, conformances: Vapor.RouteCollection)
+@attached(extension, conformances: Vapor.RouteCollection, names: named(boot))
+@attached(member)
 public macro RouteCollection(
     prefixed path: PathComponent...
 ) = #externalMacro(module: "LiquidMacros", type: "RouteCollectionMacro")
