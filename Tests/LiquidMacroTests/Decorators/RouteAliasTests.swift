@@ -33,9 +33,9 @@ final class RouteDecoratorAliasTests: XCTestCase {
 
         extension Greetings: RouteCollection {
             func boot(routes: any RoutesBuilder) throws {
-                routes.on(.\(method), "greet", use: {
-                        self.greet(request: $0)
-                    })
+                routes.on(.\(method), "greet") {
+                    self.greet(request: $0)
+                }
             }
         }
         """

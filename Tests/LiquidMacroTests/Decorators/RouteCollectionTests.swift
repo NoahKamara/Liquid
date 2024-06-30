@@ -63,9 +63,9 @@ final class RouteCollectionTests: XCTestCase {
 
             extension Greetings: RouteCollection {
                 func boot(routes: any RoutesBuilder) throws {
-                    routes.on(.GET, "greet", use: {
-                            self.greet(request: $0)
-                        })
+                    routes.on(.GET, "greet") {
+                        self.greet(request: $0)
+                    }
                 }
             }
             """
@@ -91,9 +91,9 @@ final class RouteCollectionTests: XCTestCase {
 
             extension Greetings: RouteCollection {
                 func boot(routes: any RoutesBuilder) throws {
-                    routes.on(.GET, "/", use: {
-                            self.greet(request: $0)
-                        })
+                    routes.on(.GET, "/") {
+                        self.greet(request: $0)
+                    }
                 }
             }
             """
@@ -119,9 +119,9 @@ final class RouteCollectionTests: XCTestCase {
 
             extension Greetings: RouteCollection {
                 func boot(routes: any RoutesBuilder) throws {
-                    routes.on(.GET, "greet", "world", use: {
-                            self.greet(request: $0)
-                        })
+                    routes.on(.GET, "greet", "world") {
+                        self.greet(request: $0)
+                    }
                 }
             }
             """
@@ -147,9 +147,9 @@ final class RouteCollectionTests: XCTestCase {
 
             extension Greetings: RouteCollection {
                 func boot(routes: any RoutesBuilder) throws {
-                    routes.on(.GET, "greet", ":name", use: {
-                            self.greet(request: $0)
-                        })
+                    routes.on(.GET, "greet", ":name") {
+                        try self.greet(request: $0)
+                    }
                 }
             }
             """
@@ -175,9 +175,9 @@ final class RouteCollectionTests: XCTestCase {
 
             extension Greetings: RouteCollection {
                 func boot(routes: any RoutesBuilder) throws {
-                    routes.on(.GET, "greet", "*", use: {
-                            self.greet(request: $0)
-                        })
+                    routes.on(.GET, "greet", "*") {
+                        self.greet(request: $0)
+                    }
                 }
             }
             """
@@ -203,9 +203,9 @@ final class RouteCollectionTests: XCTestCase {
 
             extension Greetings: RouteCollection {
                 func boot(routes: any RoutesBuilder) throws {
-                    routes.on(.GET, "greet", "**", use: {
-                            self.greet(request: $0)
-                        })
+                    routes.on(.GET, "greet", "**") {
+                        self.greet(request: $0)
+                    }
                 }
             }
             """

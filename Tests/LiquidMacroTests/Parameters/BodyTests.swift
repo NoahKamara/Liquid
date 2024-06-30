@@ -15,6 +15,7 @@ final class BodyTests: XCTestCase {
 
     func testContainer() throws {
         XCTExpectFailure("Not Implemented")
+        XCTFail()
 
         assertMacro {
             #"""
@@ -29,8 +30,8 @@ final class BodyTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Body()
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Body(String.self, .container)(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -51,8 +52,8 @@ final class BodyTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Body("name")
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Body(String.self, "name")(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -73,8 +74,8 @@ final class BodyTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Body("person")
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Body(String.self, "person")(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -95,8 +96,8 @@ final class BodyTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Body("person", "name")
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Body(String.self, "person", "name")(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#

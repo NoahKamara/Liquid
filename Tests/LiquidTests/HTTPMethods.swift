@@ -2,38 +2,35 @@ import Liquid
 import Testing
 
 
-@Suite
-struct RouteE2E {
-    @Test("HTTP Methods", arguments: [
-        "GET", "PUT", "ACL", "HEAD", "POST", "COPY",
-        "LOCK", "MOVE", "BIND", "LINK", "PATCH", "TRACE",
-        "MKCOL", "MERGE", "PURGE", "NOTIFY", "SEARCH", 
-        "UNLOCK", "REBIND", "UNBIND", "REPORT", "DELETE",
-        "UNLINK", "CONNECT", "MSEARCH", "OPTIONS", "PROPFIND", 
-        "CHECKOUT", "PROPPATCH", "SUBSCRIBE", "MKCALENDAR",
-        "MKACTIVITY", "UNSUBSCRIBE", "SOURCE"
-    ])
-    func methods(method: String) async throws {
-        try await withRoutes(of: MethodTestingRoutes()) { app in
-            // Route with method exists
-            try #require(app.routes.all.contains(where: {
-                $0.path.first?.description == method && $0.method.rawValue == method
-            }))
 
-            let res = try await app.send(.init(rawValue: method), "/"+method)
+@Test("HTTP Methods", arguments: [
+    "GET", "PUT", "ACL", "HEAD", "POST", "COPY",
+    "LOCK", "MOVE", "BIND", "LINK", "PATCH", "TRACE",
+    "MKCOL", "MERGE", "PURGE", "NOTIFY", "SEARCH",
+    "UNLOCK", "REBIND", "UNBIND", "REPORT", "DELETE",
+    "UNLINK", "CONNECT", "MSEARCH", "OPTIONS", "PROPFIND",
+    "CHECKOUT", "PROPPATCH", "SUBSCRIBE", "MKCALENDAR",
+    "MKACTIVITY", "UNSUBSCRIBE", "SOURCE"
+])
+func methods(method: String) async throws {
+    try await withRoutes(of: MethodTestingRoutes()) { app in
+        // Route with method exists
+        try #require(app.routes.all.contains(where: {
+            $0.path.first?.description == method && $0.method.rawValue == method
+        }))
 
-            // Request Succeeded
-            #expect(res.status == .ok)
+        let res = try await app.send(.init(rawValue: method), "/"+method)
 
-            // Correct Request was called
-            #expect(try res.content.decode(String.self, as: .plainText) == method)
-        }
+        // Request Succeeded
+        #expect(res.status == .ok)
+
+        // Correct Request was called
+        #expect(try res.content.decode(String.self, as: .plainText) == method)
     }
 }
 
-
 @RouteCollection
-struct MethodTestingRoutes {
+fileprivate struct MethodTestingRoutes {
     @GET("GET")
     func GET() -> String { "GET" }
 

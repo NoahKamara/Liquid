@@ -27,8 +27,8 @@ final class HeaderTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Header("name")
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Header(String.self, "name")(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -49,8 +49,8 @@ final class HeaderTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Header("person")
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Header(String.self, "person")(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#

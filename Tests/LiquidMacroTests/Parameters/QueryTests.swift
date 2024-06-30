@@ -16,7 +16,7 @@ final class QueryTests: XCTestCase {
 
     func testContainer() throws {
         XCTExpectFailure("Not Implemented")
-
+        XCTFail()
         assertMacro {
             #"""
             @CollectableRoute(.GET, "greet")
@@ -30,8 +30,8 @@ final class QueryTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Query()
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Query(String.self, .container)(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -52,8 +52,8 @@ final class QueryTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Query("name")
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Query(String.self, "name")(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -74,8 +74,8 @@ final class QueryTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Query("person")
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Query(String.self, "person")(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
@@ -96,8 +96,8 @@ final class QueryTests: XCTestCase {
                 "Hello \(name)"
             }
 
-            func greet(request: Request) -> String {
-                let __macro_local_4namefMu_ = try RouteParameters.Query("person", "name")
+            func greet(request: Request) throws -> String {
+                let __macro_local_4namefMu_ = try RouteParameters.Query(String.self, "person", "name")(from: request)
                 return greet(name: __macro_local_4namefMu_)
             }
             """#
