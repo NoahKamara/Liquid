@@ -81,7 +81,7 @@ public extension RouteParameters {
 
         public init(
             _: Value.Type,
-            at path: CodingKeyRepresentable...
+            _ path: CodingKeyRepresentable...
         ) {
             self.init(path: path)
         }
@@ -94,37 +94,56 @@ public extension RouteParameters {
 
 // MARK: Path
 public extension RouteParameters {
-    struct Path<Value: LosslessStringConvertible>: RouteParameter {
-        let name: PathComponent
+    fileprivate struct PathParameter<Value: LosslessStringConvertible>: RouteParameter {
+        let name: String
+        func decode(from request: Request) throws -> Value {
+            try request.parameters.require(name, as: Value.self)
+        }
+    }
+
+    fileprivate struct PathCatchall: RouteParameter {
+        func decode(from request: Request) -> [String] {
+            request.parameters.getCatchall()
+        }
+    }
+
+    struct Path<Value>: RouteParameter {
+        public enum Parameter: ExpressibleByStringInterpolation, Sendable, Hashable {
+            case parameter(String)
+            case catchall
+
+            /// `ExpressibleByStringLiteral` conformance.
+            public init(stringLiteral value: String) {
+                if value == "**" {
+                    self = .catchall
+                } else {
+                    self = .parameter(.init(value))
+                }
+            }
+        }
         
+        let decoder: any RouteParameter<Value>
+
+        init(_ decoder: some RouteParameter<Value>) {
+            self.decoder = decoder
+        }
+
         public init(
             _: Value.Type,
-            _ name: PathComponent
-        ) {
-            self.name = name
+            _ name: String
+        ) where Value: LosslessStringConvertible {
+            self.init(PathParameter(name: name))
+        }
+
+        public init(
+            _: Value.Type,
+            _ parameter: Liquid.Path<Value>.Catchall
+        ) where Value == [String] {
+            self.init(PathCatchall())
         }
 
         public func decode(from request: Request) throws -> Value {
-            switch name {
-                case .constant, .anything:
-                    throw DecodingError.dataCorrupted(.init(
-                        codingPath: [],
-                        debugDescription: "PathComponent must be parameter or catchall")
-                    )
-
-                case .parameter(let string):
-                    try request.parameters.require(string, as: Value.self)
-
-                case .catchall:
-                    if Value.self == [String].self {
-                        request.parameters.getCatchall() as! Value
-                    } else {
-                        throw DecodingError.dataCorrupted(.init(
-                            codingPath: [],
-                            debugDescription: "Value.self must be of [String]")
-                        )
-                    }
-            }
+            try decoder(from: request)
         }
     }
 }

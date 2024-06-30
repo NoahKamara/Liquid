@@ -1,16 +1,43 @@
 import Liquid
 //import OpenAPIKit
 
+
+enum Language: String, LosslessStringConvertible {
+    case german = "de"
+    case spanish = "en"
+
+    var greeting: String {
+        switch self {
+            case .german: "Hallo"
+            case .spanish: "Hola"
+        }
+    }
+}
+
 @RouteCollection(prefixed: "greet")
 struct Greetings {
-    @Route(.GET, "world")
-    func greetWorld() -> String {
-        "Hello World"
+    @GET("greet", ":language", ":name")
+    func greet(
+        @Path name: String,
+        @Path("language") lang: Language
+    ) -> String {
+        lang.greeting + " " + name
     }
 
-    @GET("greet", ":language", ":name")
-    func greetPerson(@Path("language") lang: String, @Path("name") name: String) -> String {
-        lang + " " + name
+    struct FileInfo: Content {
+        let name: String
+        let path: String
+    }
+
+    @GET("files", .catchall)
+    func getFileInfo(
+        @Path(.catchall) filePath: [String]
+    ) throws -> FileInfo {
+        guard let name = filePath.last else {
+            throw Abort(.notFound, reason: "File does not exist")
+        }
+
+        return FileInfo(name: name, path: filePath.joined(separator: "/"))
     }
 }
 
@@ -20,7 +47,6 @@ let app = try await Application.make(.testing)
 let greetings = Greetings()
 
 try app.register(collection: greetings)
-//try app.register(collection: <#T##any RouteCollection#>)
 try await app.startup()
 
 print(app.routes.all)

@@ -13,23 +13,23 @@ public struct Body<Value: Decodable> {
 @propertyWrapper
 public struct Path<Value> {
     public let wrappedValue: Value
-
-    public enum PathComponent: ExpressibleByStringInterpolation, Sendable, Hashable {
-        case parameter(String)
-        case catchall
-
-        /// `ExpressibleByStringLiteral` conformance.
-        public init(stringLiteral value: String) {
-            if value == "**" {
-                self = .catchall
-            } else {
-                self = .parameter(.init(value.dropFirst()))
-            }
-        }
+    
+    
+    /// Decode this parameter from a named parameter (`:name`)
+    ///
+    /// you can specify a custo name, otherwise it is inferred from the parameter name
+    public init(wrappedValue: Value, _ name: String = "") where Value: LosslessStringConvertible {
+        self.wrappedValue = wrappedValue
     }
 
+    public enum Catchall {
+        case catchall
+    }
 
-    public init(wrappedValue: Value, _ name: PathComponent = "") where Value: LosslessStringConvertible {
+    /// Retrieve the path components caught by a 'catch all' (`**`)
+    ///
+    /// Parameter _: a catchall statement. must be ``Catchall.catchall``
+    public init(wrappedValue: Value, _: Catchall) where Value == [String] {
         self.wrappedValue = wrappedValue
     }
 }

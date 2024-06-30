@@ -33,6 +33,58 @@ extension MacroExpansionContext {
     }
 }
 
+import SwiftSyntaxBuilder
+
+extension FunctionDeclSyntax {
+    func canThrow() -> Bool {
+        signature.effectSpecifiers?.throwsClause != nil
+    }
+
+    func isAsync() -> Bool {
+        signature.effectSpecifiers?.asyncSpecifier != nil
+    }
+
+
+    func call(
+        base: (some ExprSyntaxProtocol)?,
+        @LabeledExprListBuilder argumentList: () -> LabeledExprListSyntax = { [] }
+    ) -> ExprSyntaxProtocol {
+
+        let accessExpression: ExprSyntaxProtocol = if let base {
+            MemberAccessExprSyntax(
+                base: base,
+                name: name
+            )
+        } else {
+            DeclReferenceExprSyntax(baseName: name)
+        }
+
+        var callExpression: ExprSyntaxProtocol = FunctionCallExprSyntax(
+            callee: accessExpression,
+            argumentList: argumentList
+        )
+
+        if self.isAsync() {
+            callExpression = AwaitExprSyntax(expression: callExpression)
+        }
+
+        if self.canThrow() {
+            callExpression = TryExprSyntax(expression: callExpression)
+        }
+
+        return callExpression
+    }
+
+    func call(
+        baseName: TokenSyntax? = nil,
+        @LabeledExprListBuilder argumentList: () -> LabeledExprListSyntax = { [] }
+    ) -> ExprSyntaxProtocol {
+        call(
+            base: baseName.flatMap({ DeclReferenceExprSyntax(baseName:$0) }),
+            argumentList: argumentList
+        )
+    }
+}
 
 struct RouteMacro: PeerMacro {
     // MARK: Expansion
@@ -103,10 +155,18 @@ struct RouteMacro: PeerMacro {
             LabeledExprSyntax(label: label, expression: DeclReferenceExprSyntax(baseName: variableName))
         }
 
-        let routeMethodCallExpr = FunctionCallExprSyntax(
+        var routeMethodCallExpr: ExprSyntaxProtocol = FunctionCallExprSyntax(
             callee: DeclReferenceExprSyntax(baseName: functionDecl.name),
             argumentList: { routeMethodCallArguments }
         )
+
+        if functionDecl.isAsync() {
+            routeMethodCallExpr = AwaitExprSyntax(expression: routeMethodCallExpr)
+        }
+
+        if functionDecl.canThrow() {
+            routeMethodCallExpr = TryExprSyntax(expression: routeMethodCallExpr)
+        }
 
         blocks.append(.init(item: .stmt(.init(ReturnStmtSyntax(expression: routeMethodCallExpr)))))
 
@@ -114,13 +174,20 @@ struct RouteMacro: PeerMacro {
             parameters: [.init(firstName: "request", type: IdentifierTypeSyntax(name: "Request"))]
         )
 
-        let routeAttribs = try RouteAttribute(from: node, functionName: functionDecl.name)
+        let throwsClause = if !functionDecl.signature.parameterClause.parameters.isEmpty {
+            ThrowsClauseSyntax(throwsSpecifier: .keyword(.throws))
+        } else {
+            functionDecl.signature.effectSpecifiers?.throwsClause
+        }
 
         let function = FunctionDeclSyntax(
             name: functionDecl.name,
             signature: FunctionSignatureSyntax(
                 parameterClause: parameterClause,
-                effectSpecifiers: .init(throwsClause: .init(throwsSpecifier: .keyword(.throws))),
+                effectSpecifiers: .init(
+                    asyncSpecifier: functionDecl.signature.effectSpecifiers?.asyncSpecifier,
+                    throwsClause: throwsClause
+                ),
                 returnClause: functionDecl.signature.returnClause
             ),
             body: .init(statements: .init(blocks))
