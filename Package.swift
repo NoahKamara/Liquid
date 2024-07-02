@@ -27,6 +27,7 @@ let package = Package(
     targets: [
         .target(name: "Liquid", dependencies: [
             .target(name: "LiquidMacros"),
+            .byName(name: "OpenAPIKit"),
             .product(name: "Vapor", package: "vapor")
         ]),
 
@@ -42,7 +43,8 @@ let package = Package(
                 name: "LiquidClient",
                 dependencies: [
                     "Liquid",
-//                    "OpenAPIKit"
+                    "OpenAPIKit"
+                    //                    "OpenAPIKit"
                 ]
             ),
 
@@ -50,7 +52,7 @@ let package = Package(
                 name: "LiquidTests",
                 dependencies: [
                     "Liquid",
-//                    .product(name: "XCTVapor", package: "vapor"),
+                    //                    .product(name: "XCTVapor", package: "vapor"),
                     .product(name: "Vapor", package: "vapor")
                 ]
             ),

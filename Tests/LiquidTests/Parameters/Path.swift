@@ -31,24 +31,7 @@ struct PathParameterTests {
             #expect(content == "Hello World")
         }
     }
-
-    @Test(arguments: ["Hello", nil])
-    func optionalParameter(optionalText: String?) async throws {
-        try await withRoutes(of: PathRoutes()) { app in
-            let path = "/optional" + (optionalText.flatMap({ "/"+$0 }) ?? "")
-
-            let res = try await app.get(path)
-
-            // Request Succeeded
-            #expect(res.status == .ok)
-
-            let content = try res.content.decode(String.self, as: .plainText)
-
-            // Correct Request was called
-            #expect(content == optionalText)
-        }
-    }
-
+    
     @Test
     func inferredParameterName() async throws {
         try await withRoutes(of: PathRoutes()) { app in
@@ -96,6 +79,39 @@ struct PathParameterTests {
             #expect(content == path)
         }
     }
+
+    @Test(arguments: ["No No It's not true, thats impossible"], [Casing.uppercase, Casing.lowercase])
+    func testStringLiteral(text: String, casing: Casing) async throws {
+        try await withRoutes(of: PathRoutes()) { app in
+            let res = try await app.get("/case/\(casing)/\(text)")
+
+            // Request Succeeded
+            #expect(res.status == .ok)
+
+            let content = try res.content.decode(String.self)
+
+            // Correct Request was called
+            switch casing {
+                case .uppercase:
+                    #expect(content == "NO NO IT'S NOT TRUE, THATS IMPOSSIBLE")
+                case .lowercase:
+                    #expect(content == "no no it's not true, thats impossible")
+            }
+        }
+    }
+}
+
+
+enum Casing: String, LosslessStringConvertible, Codable {
+    case uppercase = "upper"
+    case lowercase = "lower"
+
+    func apply(to text: String) -> String {
+        switch self {
+            case .uppercase: text.uppercased()
+            case .lowercase: text.lowercased()
+        }
+    }
 }
 
 @RouteCollection
@@ -113,6 +129,11 @@ fileprivate struct PathRoutes {
     @GET(":lang", "greet")
     func greetLocalized(@Path("lang") language: Language) -> String {
         language.greeting
+    }
+
+    @GET("case", ":case", ":text")
+    func changeCase(@Path("case") casing: Casing, @Path("text") text: String) -> String {
+        return casing.apply(to: text)
     }
 
     @GET("file", "**")

@@ -233,12 +233,49 @@ struct RouteMacro: PeerMacro {
             name: "\(raw: attribute.attributeName.trimmedDescription)"
         )
 
+        var type: String = parameterDecl.type.trimmedDescription
+
+        if parameterDecl.defaultValue != nil && !parameterDecl.type.isOptional() {
+            type.append("?")
+        }
+
+        var parameterDecoder: FunctionCallExprSyntax = FunctionCallExprSyntax(callee: callee, argumentList: {
+            LabeledExprSyntax(expression: MemberAccessExprSyntax(base: ExprSyntax(stringLiteral: type), name: "self"))
+            arguments
+        })
+        
+        // Set Default Value
+        if let defaultValue = parameterDecl.defaultValue?.value {
+            parameterDecoder = FunctionCallExprSyntax(
+                callee: MemberAccessExprSyntax(base: parameterDecoder, name: "defaults")
+            ) {
+                LabeledExprSyntax(label: "to", expression: defaultValue)
+            }
+        }
+
+//        return FunctionCallExprSyntax(
+//            callee: MemberAccessExprSyntax(
+//                base: parameterDecoder,
+//                name: "decode"
+//            ),
+//            argumentList: { LabeledExprSyntax(label: "from", expression: ExprSyntax("request")) }
+//        )
+
         return FunctionCallExprSyntax(
-            callee: FunctionCallExprSyntax(callee: callee, argumentList: {
-                LabeledExprSyntax(expression: ExprSyntax("\(parameterDecl.type).self"))
-                arguments
-            }),
+            callee: parameterDecoder,
             argumentList: { LabeledExprSyntax(label: "from", expression: ExprSyntax("request")) }
         )
+    }
+}
+
+extension TypeSyntax {
+    func isOptional(of wrappedType: TypeSyntax? = nil) -> Bool {
+        if let optionalType = self.as(OptionalTypeSyntax.self) {
+            wrappedType.flatMap({ $0 == optionalType.wrappedType }) ?? true
+        } else if let identifierType = self.as(IdentifierTypeSyntax.self), identifierType.name.text == "Optional" {
+            wrappedType.flatMap({ $0 == identifierType.genericArgumentClause?.arguments.first?.argument }) ?? true
+        } else {
+            false
+        }
     }
 }
